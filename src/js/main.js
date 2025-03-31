@@ -18,44 +18,51 @@ class EmployeeApp {
         this.viewBtn.addEventListener('click', () => this.showEmployeeDetails());
     }
 
-    async getAccessToken() {
-        try {
-            const response = await axios.get('https://bx-oauth2.aasc.com.vn/bx/oauth2_token/local.67e8fe627beac7.26116572');
-            return response.data.access_token;
-        } catch (error) {
-            console.error('Error getting access token:', error);
-            return null;
-        }
+    // Tạm thời hardcode token từ curl
+    getAccessToken() {
+        return "e4c1ea6700774df500774deb00000001403807a0ba2f64146b1cf8e9b93ff68e605866";
     }
 
     async fetchEmployees() {
+        this.employeeList.innerHTML = '<li class="list-group-item">Loading...</li>';
         try {
-            const token = await this.getAccessToken();
-            if (!token) return;
+            const token = this.getAccessToken();
+            if (!token) {
+                this.employeeList.innerHTML = '<li class="list-group-item">Authentication failed</li>';
+                return;
+            }
 
             const response = await axios.get('https://cdigitrans.bitrix24.vn/rest/user.get', {
-                params: {
-                    auth: token
-                }
+                params: { auth: token }
             });
+            console.log('Employee Data:', response.data);
 
-            this.renderEmployees(response.data.result);
+            if (response.data.result) {
+                this.renderEmployees(response.data.result);
+            } else {
+                this.employeeList.innerHTML = '<li class="list-group-item">No employees found</li>';
+            }
         } catch (error) {
             console.error('Error fetching employees:', error);
-            this.employeeList.innerHTML = '<li class="list-group-item">Error loading employees</li>';
+            this.employeeList.innerHTML = '<li class="list-group-item">Error: ' + error.message + '</li>';
         }
     }
 
     renderEmployees(employees) {
         this.employeeList.innerHTML = '';
         this.viewBtn.disabled = true;
-        
+
+        if (!employees || employees.length === 0) {
+            this.employeeList.innerHTML = '<li class="list-group-item">No employees available</li>';
+            return;
+        }
+
         employees.forEach(employee => {
             const li = document.createElement('li');
             li.className = 'list-group-item';
-            li.textContent = employee.NAME + ' ' + employee.LAST_NAME;
+            li.textContent = `${employee.NAME || ''} ${employee.LAST_NAME || ''}`.trim() || 'Unnamed Employee';
             li.dataset.id = employee.ID;
-            
+
             li.addEventListener('click', () => {
                 if (this.selectedEmployee) {
                     this.selectedEmployee.classList.remove('highlighted');
@@ -64,7 +71,7 @@ class EmployeeApp {
                 this.selectedEmployee = li;
                 this.viewBtn.disabled = false;
             });
-            
+
             this.employeeList.appendChild(li);
         });
     }
@@ -73,9 +80,9 @@ class EmployeeApp {
         if (!this.selectedEmployee) return;
 
         try {
-            const token = await this.getAccessToken();
+            const token = this.getAccessToken();
             const employeeId = this.selectedEmployee.dataset.id;
-            
+
             const response = await axios.get('https://cdigitrans.bitrix24.vn/rest/user.get', {
                 params: {
                     ID: employeeId,
@@ -87,7 +94,7 @@ class EmployeeApp {
             const details = `
                 <p><strong>Name:</strong> ${employee.NAME} ${employee.LAST_NAME}</p>
                 <p><strong>Email:</strong> ${employee.EMAIL || 'N/A'}</p>
-                <p><strong>Position:</strong> ${employee.WORK_POSITION || 'N/A'}</p>
+                <p><strong>Last Login:</strong> ${employee.LAST_LOGIN || 'N/A'}</p>
             `;
 
             document.getElementById('employeeDetails').innerHTML = details;

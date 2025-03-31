@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee List</title>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="d-flex mb-3">
+            <button id="refreshBtn" class="btn btn-primary mr-2">Refresh</button>
+            <button id="viewBtn" class="btn btn-info" disabled>View employee</button>
+        </div>
+        <ul id="employeeList" class="list-group"></ul>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="employeeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Employee Details</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body" id="employeeDetails"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

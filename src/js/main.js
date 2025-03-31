@@ -1,5 +1,7 @@
 import '../sass/styles.scss';
-import 'bootstrap';
+import $ from 'jquery'; // Import jQuery
+window.jQuery = window.$ = $; // Gán $ và jQuery vào global scope
+import 'bootstrap'; // Import Bootstrap sau jQuery
 import axios from 'axios';
 
 class EmployeeApp {
@@ -82,6 +84,7 @@ class EmployeeApp {
         try {
             const token = this.getAccessToken();
             const employeeId = this.selectedEmployee.dataset.id;
+            console.log('Fetching details for Employee ID:', employeeId);
 
             const response = await axios.get('https://cdigitrans.bitrix24.vn/rest/user.get', {
                 params: {
@@ -89,18 +92,24 @@ class EmployeeApp {
                     auth: token
                 }
             });
+            console.log('Employee Details Response:', response.data);
 
             const employee = response.data.result[0];
-            const details = `
-                <p><strong>Name:</strong> ${employee.NAME} ${employee.LAST_NAME}</p>
-                <p><strong>Email:</strong> ${employee.EMAIL || 'N/A'}</p>
-                <p><strong>Last Login:</strong> ${employee.LAST_LOGIN || 'N/A'}</p>
-            `;
-
-            document.getElementById('employeeDetails').innerHTML = details;
-            $('#employeeModal').modal('show');
+            if (!employee) {
+                document.getElementById('employeeDetails').innerHTML = '<p>No details available</p>';
+            } else {
+                const details = `
+                    <p><strong>Name:</strong> ${employee.NAME} ${employee.LAST_NAME}</p>
+                    <p><strong>Email:</strong> ${employee.EMAIL || 'N/A'}</p>
+                    <p><strong>Last Login:</strong> ${employee.LAST_LOGIN || 'N/A'}</p>
+                `;
+                document.getElementById('employeeDetails').innerHTML = details;
+            }
+            $('#employeeModal').modal('show'); // jQuery giờ đã hoạt động
         } catch (error) {
             console.error('Error fetching employee details:', error);
+            document.getElementById('employeeDetails').innerHTML = '<p>Error loading details: ' + error.message + '</p>';
+            $('#employeeModal').modal('show');
         }
     }
 }
